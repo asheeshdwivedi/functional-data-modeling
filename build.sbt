@@ -6,7 +6,7 @@ lazy val root = project
     scalacOptions ++= Seq(
       "-language:postfixOps"
     ),
-    scalaVersion := "2.13.3"
+    scalaVersion := "3.1.3"
   )
 
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")

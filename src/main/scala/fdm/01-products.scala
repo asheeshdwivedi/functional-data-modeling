@@ -26,7 +26,9 @@ import java.time.Instant
   *
   * {1, 2, 3, 4, 5} == {1, 2, 3, 5, 4} {x | x is a number and > 5} A UNION B A INTERSECT B A DIFFERENCE B COMPLEMENT A
   *
-  * Type: A mathematical set of values. Types are logical proposition
+  * Type: A mathematical set of values. 
+  *
+  * Types are logical proposition
   *
   * Boolean = {false , true}; Int = {Int.MinValue, ...., -1, 0, 1, ..., Int.MaxValue} Float = {0, 0.2, ...} = {x | x is
   * afloating point number that fits within 32 bits} String = {"", "a", "b" ..} = {x | s is a string}

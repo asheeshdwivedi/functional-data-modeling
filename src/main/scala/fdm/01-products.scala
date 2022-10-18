@@ -1,5 +1,9 @@
 package fdm
 
+import java.time.YearMonth
+import java.time.Month
+import java.time.Instant
+
 /** Scala supports tuples, which are a generic way to store two or more pieces of information at the same time. For
   * example, the tuple `("Alligator", 42)` stores both a string, as the first component in the tuple, and an integer, as
   * the second component in the tuple.
@@ -17,6 +21,40 @@ package fdm
   *
   * Tuples are examples of "anonymous products": they are types formed using "product composition" of other types.
   */
+
+/** An operator (+) is composable if we can apply it to its own output. (2 + 3) + 2
+  *
+  * {1, 2, 3, 4, 5} == {1, 2, 3, 5, 4} {x | x is a number and > 5} A UNION B A INTERSECT B A DIFFERENCE B COMPLEMENT A
+  *
+  * Type: A mathematical set of values. Types are logical proposition
+  *
+  * Boolean = {false , true}; Int = {Int.MinValue, ...., -1, 0, 1, ..., Int.MaxValue} Float = {0, 0.2, ...} = {x | x is
+  * afloating point number that fits within 32 bits} String = {"", "a", "b" ..} = {x | s is a string}
+  *
+  * val x: Int = 32 // x is an element Int (the set of integer)
+  *
+  * Type composition
+  *
+  * A = {a1, a2, a3, ..., aN} B = {b1, b2, b3, ..., bN}
+  *
+  * // Product composition A * B = { (a,b) | a is in A, b is in B} // cartesian product
+  *
+  * Boolean = {true, false} Age = {0, ..., 120}
+  *
+  * Boolean * Age = {(true, 0), (true, 1), ...., (false, 199), (false, 120)}
+  *
+  * Country = {USA, UK , India, ...}
+  *
+  * (Boolean * Age) * Country = {((true, 0), USA), ((true, 0), UK), ((true, 0), India), ..., ((flase, 120), India)}
+  *
+  * Product composition is composable
+  *
+  * f: (Type, Type) => Type ex :f(f(f(Int, String), String), Boolean)
+  *
+  * \|A * B| = |A| * |B|
+  *
+  * A = {true, false} B = {0, 1, 2, 3, 4} \|A| = 2 \|B| = 5 \|A * B| = 10
+  */
 object tuples {
 
   /** EXERCISE 1
@@ -24,14 +62,14 @@ object tuples {
     * Using both a type alias, and Scala's tuple types, construct a type called `Person` that can hold both the name of
     * a `Person` (as a `String`), together with the age of the `Person` (as an `Int`).
     */
-  type Person = TODO
+  type Person = (String, Int)
 
   /** EXERCISE 2
     *
     * Using the `Person` type alias that you just created, construct a value that has type `Person`, whose name is
     * "Sherlock Holmes", and whose age is 42.
     */
-  lazy val sherlockHolmes: Person = TODO
+  lazy val sherlockHolmes: Person = "Sherlock Holmes" -> 42
 
   /** EXERCISE 3
     *
@@ -39,14 +77,14 @@ object tuples {
     * number (as a `String`), a credit card expiration date (as a `java.time.YearMonth`), a full name (as a `String`),
     * and a security code (as a `Short`).
     */
-  type CreditCard = TODO
+  type CreditCard = (String, java.time.YearMonth, String)
 
   /** EXERCISE 4
     *
     * Using the `CreditCard` type alias that you just created, construct a value that has type `CreditCard`, with
     * details invented by you.
     */
-  lazy val creditCard: CreditCard = TODO
+  lazy val creditCard: CreditCard = ("xxx", YearMonth.of(2022, Month.FEBRUARY), "Asheesh")
 }
 
 /** Scala supports case classes, which are a generic way to store two or more pieces of information at the same time,
@@ -72,14 +110,14 @@ object case_class_basics {
     * stored in a field called `name`), together with the age of the `Person` (as an `Int` stored in a field called
     * `age`).
     */
-  final case class Person()
+  final case class Person(name: String, age: Int)
 
   /** EXERCISE 2
     *
     * Using the `Person` case class that you just created, construct a value that has type `Person`, whose name is
     * "Sherlock Holmes", and whose age is 42.
     */
-  lazy val sherlockHolmes: Person = TODO
+  lazy val sherlockHolmes: Person = Person("Asheesh", 39)
 
   /** EXERCISE 3
     *
@@ -88,14 +126,14 @@ object case_class_basics {
     * `expDate`), a full name (as a `String` stored in a field called `name`), and a security code (as a `Short` in a
     * field called `securityCode`).
     */
-  final case class CreditCard()
+  final case class CreditCard(number: String, expDate: YearMonth, name: String)
 
   /** EXERCISE 4
     *
     * Using the `CreditCard` case class that you just created, construct a value that has type `CreditCard`, with
     * details invented by you.
     */
-  lazy val creditCard: CreditCard = TODO
+  lazy val creditCard: CreditCard = CreditCard("xxx", YearMonth.of(2022, Month.FEBRUARY), "Asheesh")
 }
 
 /** Scala's case classes come equipped with useful functionality that all "data classes" should have. In particular,
@@ -113,7 +151,9 @@ object case_class_utilities {
     * Construct and compare two values of type `Person` to see if they are equal to each other. Compare using the `==`
     * method, which is available on every value of type `Person`.
     */
-  lazy val comparison: Boolean = TODO
+  lazy val comparison: Boolean = Person("Asheesh", 42) == Person("Asheesh", 42)
+
+  lazy val refComparison: Boolean = Person("Asheesh", 42) eq Person("Asheesh", 42)
 
   /** EXERCISE 2
     *
@@ -121,7 +161,7 @@ object case_class_utilities {
     * law, if two values are equal, their hash codes must also be equal. Compute the hash code of the `Person` values by
     * calling the `hashCode` method, which is available on every value of type `Person`.
     */
-  lazy val hashComparison: Boolean = TODO
+  lazy val hashComparison: Boolean = Person("Asheesh", 42).hashCode() == Person("Asheesh", 42).hashCode()
 
   /** EXERCISE 3
     *
@@ -130,7 +170,7 @@ object case_class_utilities {
     * parameters, you need only specify the field you wish to change in the copy operation.
     */
   lazy val sherlockHolmes: Person = Person("Sherlock Holmes", 42)
-  lazy val youngerHolmes: Person  = TODO
+  lazy val youngerHolmes: Person  = sherlockHolmes.copy(age = 10)
 }
 
 /** Both tuples and case classes can be used in pattern matching. Pattern matching can be used to pull out fields from
@@ -150,7 +190,7 @@ object product_patterns {
     */
   def example1 =
     sherlockHolmes match {
-      case Person(name, age) => TODO
+      case Person(name, age) => println(s"name: $name and age: $age")
     }
 
   /** EXERCISE 2
@@ -160,7 +200,9 @@ object product_patterns {
     * price of the product.
     */
   def example2 =
-    ("Suitcase", 19.95)
+    ("Suitcase", 19.95) match {
+      case (name, price) => println(s"name: $name, price: $price")
+    }
 
   final case class Employee(name: String, address: Address)
   final case class Address(street: String, number: Int)
@@ -172,7 +214,10 @@ object product_patterns {
     * Pattern match on `dilbert` and extract out and print the address number. This will involve using a nested pattern
     * match.
     */
-  dilbert todo
+  dilbert match {
+    case Employee(_, Address(street, number)) =>
+      println(s"Street number: ${number}")
+  }
 
   /** EXERCISE 4
     *
@@ -181,7 +226,10 @@ object product_patterns {
     * name is equal to `"Dilbert"`, and all other cases. Print out the name in each case. Note the ordering of case
     * evaluation, which proceeds from top to bottom.
     */
-  dilbert todo
+  dilbert match {
+    case Employee("Dilbert", address) => println("Dilbert")
+    case Employee(name, address)      => println(name)
+  }
 
   /** EXERCISE 5
     *
@@ -191,7 +239,10 @@ object product_patterns {
     * Pattern match on `dilbert` again and have two cases: the first one matches any address name that starts with the
     * string `"B"`, and a catch all case that matches all patterns. In both cases, print out the name of the street.
     */
-  dilbert todo
+  dilbert match {
+    case Employee(_, Address(street, _)) if street.startsWith("B") => println(street)
+    case Employee(_, Address(street, _))                           => println(street)
+  }
 
   /** EXERCISE 6
     *
@@ -202,7 +253,9 @@ object product_patterns {
     * In this exercise, pattern match on dilbert, and give a name `a` to the inner `Address`, and then print out that
     * `a` in the case expression.
     */
-  dilbert todo
+  dilbert match {
+    case Employee(_, address @ Address(_, _)) => println(address)
+  }
 
   /** EXERCISE 7
     *
@@ -211,7 +264,13 @@ object product_patterns {
     *
     * In this exercise, match for the name "Dilbert" or the name "dilbert", and print out the address of the employee.
     */
-  dilbert todo
+  dilbert match {
+    case Employee("Dilbert" | "dilbert", address) => println(address)
+    case _                                        => ???
+  }
+
+  lazy val Employee(name, address) = dilbert
+
 }
 
 /** Scala's case classes can be generic, which means the types defined by case classes may have generic type parameters.
@@ -225,20 +284,22 @@ object case_class_generics {
     * Convert this non-generic case class into a generic case class, by introducing a new type parameter, called
     * `Payload`, and use this type parameter to define the type of the field called `payload` already defined inside the
     * case class.
+    *
+    * Parameterise polymorphic data type
     */
-  final case class Event(id: String, name: String, time: java.time.Instant, payload: String)
+  final case class Event[A](id: String, name: String, time: java.time.Instant, payload: A)
 
   /** EXERCISE 2
     *
     * Construct a type alias called `EventString`, which is an `Event` but with a `String` payload.
     */
-  type EventString = TODO
+  type EventString = Event[String]
 
   /** EXERCISE 2
     *
     * Construct an event that has a payload type of `Int`.
     */
-  lazy val eventInt = TODO
+  lazy val eventInt = Event[Int]("id", "name", Instant.now(), 42)
 
   /** EXERCISE 3
     *
@@ -246,5 +307,5 @@ object case_class_generics {
     * represents the body type of the request, and use this type parameter to define the type of the field called `body`
     * already defined inside the case class.
     */
-  final case class Request(body: Event, sender: String)
+  final case class Request[Body](body: Body, sender: String)
 }

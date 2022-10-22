@@ -7,12 +7,20 @@ package fdm
   */
 object recursive {
 
+  /*
+  sealed trait List[+A]
+  case object Nil                                 extends List[Nothing]
+  final case class ::[+A](head: A, tail: List[A]) extends List[A]
+   */
+
   /** EXERCISE 1
     *
     * Create a recursive data type that models a user of a social network, who has friends; and whose friends may have
     * other friends, and so forth.
     */
-  final case class User()
+  final case class User(name: String, hobbies: List[String], friends: () => Set[User])
+  lazy val asheesh: User = User("Asheesh", List("Coding", "sports"), () => Set(asheesh))
+  asheesh.friends().head == asheesh
 
   /** EXERCISE 2
     *
@@ -22,6 +30,10 @@ object recursive {
   sealed trait NumericExpression
   object NumericExpression {
     final case class Literal(value: Int) extends NumericExpression
+    final case class +(left: NumericExpression, right: NumericExpression)
+    final case class -(left: NumericExpression, right: NumericExpression)
+    final case class /(left: NumericExpression, right: NumericExpression)
+    final case class *(left: NumericExpression, right: NumericExpression)
   }
 
   /** EXERCISE 3
@@ -33,6 +45,8 @@ object recursive {
   object EmailTrigger {
     case object OnPurchase                                         extends EmailTrigger
     final case class Both(left: EmailTrigger, right: EmailTrigger) extends EmailTrigger
+    final case class &&(left: EmailTrigger, right: EmailTrigger)   extends EmailTrigger
+    final case class ||(left: EmailTrigger, right: EmailTrigger)   extends EmailTrigger
   }
 }
 
@@ -47,7 +61,7 @@ object cyclically_recursive {
     *
     * Create a snake that is eating its own tail. In order to do this, you will have to use a `lazy val`.
     */
-  val snake: Snake = ???
+  def snake: Snake = Snake(snake)
 
   /** EXERCISE 2
     *
@@ -55,7 +69,10 @@ object cyclically_recursive {
     * from `Employee` to `() => Employee` (`Function0`), also called a "thunk", and you will have to use a `lazy val` to
     * define the employees.
     */
-  final case class Employee(name: String, coworker: Employee)
+  final case class Employee(name: String, coworker: () => Employee)
+
+  lazy val tim: Employee = Employee("Tim", () => tom)
+  lazy val tom: Employee = Employee("Tom", () => tim)
 
   /** EXERCISE 3
     *
@@ -63,11 +80,21 @@ object cyclically_recursive {
     */
   sealed trait LazyList[+A] extends Iterable[A]
   object LazyList {
-    def apply[A](el: A): LazyList[A] = ???
+    object Nil                                         extends LazyList[Nothing] {
+      def iterator: Iterator[Nothing] = Iterator.empty
+    }
+    case class ::[A](h: () => A, t: () => LazyList[A]) extends LazyList[A]       {
+      def iterator: Iterator[A] = Iterator(h()) ++ t().iterator
+    }
+
+    def apply[A](el: A): LazyList[A] = ::(() => el, () => Nil)
 
     // The syntax `=>` means a "lazy parameter". Such parameters are evaluated wherever they are
     // referenced "by name".
-    def concat[A](left: => LazyList[A], right: => LazyList[A]): LazyList[A] = ???
+    def concat[A](left: => LazyList[A], right: => LazyList[A]): LazyList[A] = left match {
+      case Nil    => right
+      case h :: t => ::(h, () => concat(t(), right))
+    }
   }
 
   lazy val infiniteList: LazyList[Int] = LazyList.concat(LazyList(1), infiniteList)

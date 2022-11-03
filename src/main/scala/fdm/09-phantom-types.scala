@@ -9,11 +9,11 @@ object phantom_types {
     */
   type Created
   type Connected
-  trait Socket
+  trait Socket[State]
 
-  def createSocket(): Socket                                 = ???
-  def connectSocket(address: String, socket: Socket): Socket = ???
-  def readSocket(socket: Socket): Array[Byte]                = ???
+  def createSocket(): Socket[Created]                                            = ???
+  def connectSocket(address: String, socket: Socket[Created]): Socket[Connected] = ???
+  def readSocket(socket: Socket[Connected]): Array[Byte]                         = ???
 
   /** EXERCISE 2
     *
@@ -26,14 +26,21 @@ object phantom_types {
     */
   type File
   type Directory
-  sealed trait Path
+  type Unknown
+  sealed trait Path[A] { self =>
+
+    def /(name: String)(implicit ev: A <:< Directory): Path[Unknown] = Path.ChildOf(self.widen[Directory], name)
+
+    def widen[Parent](implicit ev: A <:< Parent): Path[Parent] = self.asInstanceOf[Path[Parent]]
+
+  }
   object Path {
-    case object Root                                   extends Path
-    final case class ChildOf(path: Path, name: String) extends Path
+    case object Root                                                 extends Path[Directory]
+    final case class ChildOf[T](path: Path[Directory], name: String) extends Path[T]
   }
 
-  def readFile(path: Path): String          = ???
-  def listDirectory(path: Path): List[Path] = ???
+  def readFile(path: Path[File]): String                        = ???
+  def listDirectory(path: Path[Directory]): List[Path[Unknown]] = ???
 
   /** EXERCISE 3
     *
@@ -46,15 +53,36 @@ object phantom_types {
     * Note: As before, you must make the constructors of the data type with a phantom type parameter private, so they
     * cannot be called from outside code.
     */
-  type SetAge
-  type SetName
-  case class PersonBuilder(age: Option[Int], name: Option[String]) {
-    def age(v: Int): PersonBuilder = copy(age = Some(v))
+  trait Openable
+  trait Closeable
+  type Resource = Openable with Closeable
+  trait Sockets extends Openable with Closeable
+  val soc: Resource = new Sockets {}
 
-    def name(s: String): PersonBuilder = copy(name = Some(s))
+  type Age
+  type Name
+  type Address
+
+  final case class Person(name: String, age: Int, address: List[String])
+
+  final case class PersonBuilder[+Set] private (age: Option[Int], name: Option[String], address: Option[List[String]]) {
+
+    def address(list: List[String]): PersonBuilder[Set with Address] = copy(address = Some(list))
+
+    def age(v: Int): PersonBuilder[Set with Age] = copy(age = Some(v))
+
+    def name(s: String): PersonBuilder[Set with Name] = copy(name = Some(s))
+
+    def build(implicit ev: Set <:< Name with Age): Person =
+      Person(name.get, age.get, address.getOrElse(Nil))
+
   }
-  final case class Person(name: String, age: Int)
+  object PersonBuilder {
+    val empty: PersonBuilder[Any] = PersonBuilder(None, None, None)
+  }
 
-  def build(personBuilder: PersonBuilder): Person =
-    Person(personBuilder.name.get, personBuilder.age.get)
+  val x = PersonBuilder.empty
+    .name("Asheesh")
+    .age(40)
+    .build
 }
